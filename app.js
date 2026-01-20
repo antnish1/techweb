@@ -106,11 +106,26 @@ document.getElementById("viewBtn").addEventListener("click", () => {
  * COPY FORMAT
  ***************************************************/
 function generateCopyFormat(c) {
+  const machineNo = clean(c[9]?.v);
+
+  // 1️⃣ COPY MACHINE NUMBER TO CLIPBOARD (SAFE METHOD)
+  if (machineNo) {
+    const taTemp = document.createElement("textarea");
+    taTemp.value = machineNo;
+    document.body.appendChild(taTemp);
+    taTemp.select();
+    document.execCommand("copy");
+    document.body.removeChild(taTemp);
+
+    console.log("✅ Machine Number copied to clipboard:", machineNo);
+  }
+
+  // 2️⃣ GENERATE COPY FORMAT TEXT
   const text = `
 Is M/C Covered Under JCB Care / Engine Care / Warranty : U/W
 Call ID : ${clean(c[0]?.v)}
 Customer Name : ${clean(c[6]?.v)}
-Machine SL No. : ${clean(c[9]?.v)}
+Machine SL No. : ${machineNo}
 Engine No : __________
 M/C Model : ${clean(c[10]?.v)}
 HMR : ${clean(c[11]?.v)}
@@ -127,11 +142,17 @@ Failed Part No. : __________
 Action Required : __________
 `.trim();
 
-  const ta = document.getElementById("copyText");
-  ta.value = text;
-
+  // 3️⃣ SHOW COPY BOX
+  document.getElementById("copyText").value = text;
   document.getElementById("copyBox").hidden = false;
+
+  alert(
+    "✔ Copy format opened\n\n" +
+    "Machine Number copied to clipboard:\n" +
+    machineNo
+  );
 }
+
 
 /***************************************************
  * CLIPBOARD
