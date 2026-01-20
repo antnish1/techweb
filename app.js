@@ -4,6 +4,9 @@ const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:
 
 let filteredRows = [];
 
+/***************************************************
+ * HELPERS
+ ***************************************************/
 function clean(v) {
   return v ? v.toString().trim() : "";
 }
@@ -26,6 +29,9 @@ function formatDate(date) {
   return `${d}/${m}/${y}`;
 }
 
+/***************************************************
+ * FETCH & FILTER DATA
+ ***************************************************/
 fetch(URL)
   .then(res => res.text())
   .then(text => {
@@ -35,6 +41,7 @@ fetch(URL)
     const today = new Date();
     const oneMonthAgo = new Date(today);
     oneMonthAgo.setMonth(today.getMonth() - 1);
+
     const oneYearAgo = new Date(today);
     oneYearAgo.setFullYear(today.getFullYear() - 1);
 
@@ -63,11 +70,14 @@ fetch(URL)
     document.getElementById("viewBtn").disabled = false;
   });
 
+/***************************************************
+ * RENDER TABLE
+ ***************************************************/
 document.getElementById("viewBtn").addEventListener("click", () => {
   const tbody = document.querySelector("#dataTable tbody");
   tbody.innerHTML = "";
 
-  filteredRows.forEach((c, idx) => {
+  filteredRows.forEach(c => {
     const tr = document.createElement("tr");
 
     [
@@ -93,7 +103,7 @@ document.getElementById("viewBtn").addEventListener("click", () => {
 });
 
 /***************************************************
- * COPY FORMAT LOGIC
+ * COPY FORMAT
  ***************************************************/
 function generateCopyFormat(c) {
   const text = `
@@ -117,10 +127,15 @@ Failed Part No. : __________
 Action Required : __________
 `.trim();
 
-  document.getElementById("copyText").value = text;
+  const ta = document.getElementById("copyText");
+  ta.value = text;
+
   document.getElementById("copyBox").hidden = false;
 }
 
+/***************************************************
+ * CLIPBOARD
+ ***************************************************/
 function copyToClipboard() {
   const ta = document.getElementById("copyText");
   ta.select();
@@ -130,4 +145,31 @@ function copyToClipboard() {
 
 function closeCopyBox() {
   document.getElementById("copyBox").hidden = true;
+}
+
+/***************************************************
+ * ENGINE NO INJECTION (TEXT-BASED, CORRECT)
+ ***************************************************/
+function pasteEngineNo() {
+  navigator.clipboard.readText().then(text => {
+    if (!text.startsWith("__ENGINE_NO__=")) {
+      alert("❌ Clipboard does not contain Engine No");
+      return;
+    }
+
+    const engineNo = text.replace("__ENGINE_NO__=", "").trim();
+    const ta = document.getElementById("copyText");
+
+    if (!ta.value.includes("Engine No :")) {
+      alert("❌ Copy format not open");
+      return;
+    }
+
+    ta.value = ta.value.replace(
+      /Engine No\s*:\s*.*/i,
+      `Engine No : ${engineNo}`
+    );
+
+    console.log("✅ Engine No injected:", engineNo);
+  });
 }
