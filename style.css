@@ -1,0 +1,47 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f6f8;
+  padding: 20px;
+}
+
+h1 {
+  margin-bottom: 20px;
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  width: 300px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+#count {
+  font-size: 36px;
+  margin: 10px 0;
+  color: #007bff;
+}
+
+button {
+  padding: 10px;
+  width: 100%;
+  cursor: pointer;
+}
+
+table {
+  margin-top: 30px;
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+th, td {
+  padding: 8px;
+  border: 1px solid #ddd;
+  font-size: 13px;
+}
+
+th {
+  background: #007bff;
+  color: white;
+}
