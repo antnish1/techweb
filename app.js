@@ -1,41 +1,31 @@
-/***************************************************
- * CONFIGURATION
- ***************************************************/
 const SHEET_ID = "15S8wwS4cbi8dFEvpoeIw0EDD1WMZceub5IpmtF5SFes";
 const SHEET_NAME = "OCR";
-
 const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
 
 let filteredRows = [];
 
-/***************************************************
- * HELPERS
- ***************************************************/
-function clean(value) {
-  return value ? value.toString().trim() : "";
+function clean(v) {
+  return v ? v.toString().trim() : "";
 }
 
 function parseDate(cell) {
   if (!cell) return null;
-
   if (cell.v instanceof Date) return cell.v;
-
-  if (typeof cell.v === "string" && cell.v.startsWith("Date(")) {
-    const p = cell.v.replace("Date(", "").replace(")", "").split(",").map(Number);
-    return new Date(p[0], p[1], p[2]);
-  }
-
   if (cell.f) {
     const d = new Date(cell.f);
     return isNaN(d) ? null : d;
   }
-
   return null;
 }
 
-/***************************************************
- * FETCH + FILTER
- ***************************************************/
+function formatDate(date) {
+  if (!date) return "";
+  const d = String(date.getDate()).padStart(2, "0");
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const y = String(date.getFullYear()).slice(-2);
+  return `${d}/${m}/${y}`;
+}
+
 fetch(URL)
   .then(res => res.text())
   .then(text => {
@@ -45,7 +35,6 @@ fetch(URL)
     const today = new Date();
     const oneMonthAgo = new Date(today);
     oneMonthAgo.setMonth(today.getMonth() - 1);
-
     const oneYearAgo = new Date(today);
     oneYearAgo.setFullYear(today.getFullYear() - 1);
 
@@ -53,38 +42,32 @@ fetch(URL)
       const c = r.c;
       if (!c) return;
 
-      const createDate = parseDate(c[1]);   // Create Date
-      const installDate = parseDate(c[12]); // Install Date
-
+      const createDate = parseDate(c[1]);
+      const installDate = parseDate(c[12]);
       if (!createDate || !installDate) return;
 
-      const isValid =
+      if (
         createDate >= oneMonthAgo &&
         installDate >= oneYearAgo &&
         clean(c[5]?.v) === "3. Fix" &&
         clean(c[18]?.v) === "OnSite" &&
         clean(c[19]?.v) === "Warranty" &&
         clean(c[20]?.v) === "Failure" &&
-        clean(c[27]?.v) !== "Service";
-
-      if (isValid) filteredRows.push(c);
+        clean(c[27]?.v) !== "Service"
+      ) {
+        filteredRows.push(c);
+      }
     });
 
     document.getElementById("count").innerText = filteredRows.length;
     document.getElementById("viewBtn").disabled = false;
+  });
 
-    console.log("MATCHING ROWS:", filteredRows.length);
-  })
-  .catch(err => console.error(err));
-
-/***************************************************
- * TABLE RENDER
- ***************************************************/
 document.getElementById("viewBtn").addEventListener("click", () => {
   const tbody = document.querySelector("#dataTable tbody");
   tbody.innerHTML = "";
 
-  filteredRows.forEach(c => {
+  filteredRows.forEach((c, idx) => {
     const tr = document.createElement("tr");
 
     [
@@ -96,8 +79,55 @@ document.getElementById("viewBtn").addEventListener("click", () => {
       tr.appendChild(td);
     });
 
+    const btnTd = document.createElement("td");
+    const btn = document.createElement("button");
+    btn.textContent = "Copy Format";
+    btn.onclick = () => generateCopyFormat(c);
+    btnTd.appendChild(btn);
+    tr.appendChild(btnTd);
+
     tbody.appendChild(tr);
   });
 
   document.getElementById("dataTable").hidden = false;
 });
+
+/***************************************************
+ * COPY FORMAT LOGIC
+ ***************************************************/
+function generateCopyFormat(c) {
+  const text = `
+Is M/C Covered Under JCB Care / Engine Care / Warranty : U/W
+Call ID : ${clean(c[0]?.v)}
+Customer Name : ${clean(c[6]?.v)}
+Machine SL No. : ${clean(c[9]?.v)}
+Engine No : __________
+M/C Model : ${clean(c[10]?.v)}
+HMR : ${clean(c[11]?.v)}
+Date of Installation : ${formatDate(parseDate(c[12]))}
+Date of Failure : ${formatDate(parseDate(c[1]))}
+M/C Location : ${clean(c[21]?.v)}
+M/C Application : Material Handling
+Dealership & Branch Name : FCV
+Engineer Name : ${clean(c[24]?.v)}
+M/C Condition : Running with problem
+Nature of Complaint : ${clean(c[4]?.v)}
+Failed Part Name : __________
+Failed Part No. : __________
+Action Required : __________
+`.trim();
+
+  document.getElementById("copyText").value = text;
+  document.getElementById("copyBox").hidden = false;
+}
+
+function copyToClipboard() {
+  const ta = document.getElementById("copyText");
+  ta.select();
+  document.execCommand("copy");
+  alert("Copied ✔️");
+}
+
+function closeCopyBox() {
+  document.getElementById("copyBox").hidden = true;
+}
