@@ -4,6 +4,19 @@ const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:
 
 let filteredRows = [];
 
+
+/***************************************************
+ * ROW STATUS STORAGE (LOCAL)
+ ***************************************************/
+function getRowStatus(callId) {
+  return localStorage.getItem("row_status_" + callId) || "Pending";
+}
+
+function setRowStatus(callId, status) {
+  localStorage.setItem("row_status_" + callId, status);
+}
+
+
 /***************************************************
  * HELPERS
  ***************************************************/
@@ -90,11 +103,23 @@ document.getElementById("viewBtn").addEventListener("click", () => {
     });
 
     // Progress column
+    const callId = clean(c[0]?.v);
+    const currentStatus = getRowStatus(callId);
+    
     const statusTd = document.createElement("td");
-    statusTd.textContent = "Pending";
-    statusTd.style.color = "orange";
+    statusTd.textContent = currentStatus;
     statusTd.style.fontWeight = "bold";
+    
+    if (currentStatus === "Completed") {
+      statusTd.style.color = "green";
+    } else if (currentStatus === "In Progress") {
+      statusTd.style.color = "blue";
+    } else {
+      statusTd.style.color = "orange";
+    }
+    
     tr.appendChild(statusTd);
+
     
     // Action button
     const btnTd = document.createElement("td");
@@ -119,6 +144,7 @@ function generateCopyFormat(c, statusTd) {
   if (statusTd) {
     statusTd.textContent = "In Progress";
     statusTd.style.color = "blue";
+    setRowStatus(clean(c[0]?.v), "In Progress");
   }
 
   
@@ -160,6 +186,20 @@ Action Required : __________
   document.getElementById("copyText").value = text;
   document.getElementById("copyBox").hidden = false;
 }
+
+
+const doneBtn = document.createElement("button");
+doneBtn.textContent = "Mark Completed";
+doneBtn.style.marginLeft = "6px";
+
+doneBtn.onclick = () => {
+  setRowStatus(callId, "Completed");
+  statusTd.textContent = "Completed";
+  statusTd.style.color = "green";
+};
+
+btnTd.appendChild(doneBtn);
+
 
 
 /***************************************************
