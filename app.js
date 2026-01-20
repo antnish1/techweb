@@ -186,3 +186,24 @@ function pasteEngineNo() {
     console.log("✅ Engine No injected:", engineNo);
   });
 }
+
+
+/***************************************************
+ * ENTER KEY = PASTE ENGINE NO
+ ***************************************************/
+document.addEventListener("keydown", function (e) {
+  // Only react to Enter key
+  if (e.key !== "Enter") return;
+
+  const copyBox = document.getElementById("copyBox");
+
+  // Only when copy box is visible
+  if (!copyBox || copyBox.hidden) return;
+
+  // Prevent accidental new lines or form submits
+  e.preventDefault();
+
+  // Trigger paste engine number
+  pasteEngineNo();
+});
+
