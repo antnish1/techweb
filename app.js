@@ -138,10 +138,45 @@ document.getElementById("viewBtn").addEventListener("click", () => {
     doneBtn.style.marginLeft = "6px";
     
     doneBtn.onclick = () => {
-      setRowStatus(callId, "Completed");
-      statusTd.textContent = "Completed";
-      statusTd.style.color = "green";
+
+      const payload = {
+        callId: clean(c[0]?.v),
+        createDate: c[1]?.f || "",
+        crmCallNo: clean(c[3]?.v),
+        subject: clean(c[4]?.v),
+        status: clean(c[5]?.v),
+        customer: clean(c[6]?.v),
+        mobile: clean(c[8]?.v),
+        machineNumber: clean(c[9]?.v),
+        machineModel: clean(c[10]?.v),
+        hmr: clean(c[11]?.v),
+        installDate: c[12]?.f || "",
+        callType: clean(c[19]?.v),
+        callSubType: clean(c[20]?.v),
+        branch: clean(c[21]?.v),
+        city: clean(c[23]?.v),
+        serviceEngg: clean(c[24]?.v),
+        machineStatus: clean(c[27]?.v),
+    
+        engineNo: document.getElementById("engineInput")?.value || "",
+        failedPartName: document.getElementById("failedPartNameInput")?.value || "",
+        failedPartNo: document.getElementById("failedPartNoInput")?.value || "",
+        actionRequired: document.getElementById("actionRequiredInput")?.value || ""
+      };
+    
+      fetch(SAVE_URL, {
+        method: "POST",
+        body: JSON.stringify(payload)
+      }).then(() => {
+        setRowStatus(callId, "Completed");
+        statusTd.textContent = "Completed";
+        statusTd.style.color = "green";
+        alert("Saved to sheet ✔️");
+      }).catch(() => {
+        alert("❌ Failed to save");
+      });
     };
+
     
     btnTd.appendChild(doneBtn);
     tr.appendChild(btnTd);
@@ -246,6 +281,12 @@ function pasteEngineNo() {
       /Engine No\s*:\s*.*/i,
       `Engine No : ${engineNo}`
     );
+
+    const engineInput = document.getElementById("engineInput");
+    if (engineInput) {
+      engineInput.value = engineNo;
+    }
+
 
     console.log("✅ Engine No injected:", engineNo);
   });
