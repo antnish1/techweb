@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Techweb Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <h1>Techweb – Warranty Failure Dashboard</h1>
+
+  <div class="card">
+    <h2>Total Matching Calls</h2>
+    <div id="count">Loading...</div>
+    <button id="viewBtn" disabled>View Records</button>
+  </div>
+
+  <table id="dataTable" hidden>
+    <thead>
+      <tr>
+        <th>Call ID</th>
+        <th>Create Date</th>
+        <th>CRM Call No</th>
+        <th>Subject</th>
+        <th>Status</th>
+        <th>Customer</th>
+        <th>Mobile</th>
+        <th>Machine Number</th>
+        <th>Machine Model</th>
+        <th>HMR</th>
+        <th>Install Date</th>
+        <th>Call Type</th>
+        <th>Call Sub Type</th>
+        <th>Branch</th>
+        <th>City</th>
+        <th>Service Engg.</th>
+        <th>Machine Status</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script src="app.js"></script>
+</body>
+</html>
