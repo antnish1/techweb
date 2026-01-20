@@ -89,12 +89,21 @@ document.getElementById("viewBtn").addEventListener("click", () => {
       tr.appendChild(td);
     });
 
+    // Progress column
+    const statusTd = document.createElement("td");
+    statusTd.textContent = "Pending";
+    statusTd.style.color = "orange";
+    statusTd.style.fontWeight = "bold";
+    tr.appendChild(statusTd);
+    
+    // Action button
     const btnTd = document.createElement("td");
     const btn = document.createElement("button");
     btn.textContent = "Copy Format";
-    btn.onclick = () => generateCopyFormat(c);
+    btn.onclick = () => generateCopyFormat(c, statusTd);
     btnTd.appendChild(btn);
     tr.appendChild(btnTd);
+
 
     tbody.appendChild(tr);
   });
@@ -105,7 +114,14 @@ document.getElementById("viewBtn").addEventListener("click", () => {
 /***************************************************
  * COPY FORMAT
  ***************************************************/
-function generateCopyFormat(c) {
+function generateCopyFormat(c, statusTd) {
+
+  if (statusTd) {
+    statusTd.textContent = "In Progress";
+    statusTd.style.color = "blue";
+  }
+
+  
   const machineNo = clean(c[9]?.v);
 
   // Copy machine number silently
