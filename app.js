@@ -122,12 +122,29 @@ document.getElementById("viewBtn").addEventListener("click", () => {
 
     
     // Action button
+    // Action buttons
     const btnTd = document.createElement("td");
+    
+    // Copy Format button
     const btn = document.createElement("button");
     btn.textContent = "Copy Format";
     btn.onclick = () => generateCopyFormat(c, statusTd);
     btnTd.appendChild(btn);
+    
+    // Mark Completed button
+    const doneBtn = document.createElement("button");
+    doneBtn.textContent = "Mark Completed";
+    doneBtn.style.marginLeft = "6px";
+    
+    doneBtn.onclick = () => {
+      setRowStatus(callId, "Completed");
+      statusTd.textContent = "Completed";
+      statusTd.style.color = "green";
+    };
+    
+    btnTd.appendChild(doneBtn);
     tr.appendChild(btnTd);
+
 
 
     tbody.appendChild(tr);
@@ -188,17 +205,7 @@ Action Required : __________
 }
 
 
-const doneBtn = document.createElement("button");
-doneBtn.textContent = "Mark Completed";
-doneBtn.style.marginLeft = "6px";
 
-doneBtn.onclick = () => {
-  setRowStatus(callId, "Completed");
-  statusTd.textContent = "Completed";
-  statusTd.style.color = "green";
-};
-
-btnTd.appendChild(doneBtn);
 
 
 
