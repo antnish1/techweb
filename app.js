@@ -1,21 +1,27 @@
+/***************************************************
+ * CONFIG
+ ***************************************************/
 const SHEET_ID = "15S8wwS4cbi8dFEvpoeIw0EDD1WMZceub5IpmtF5SFes";
 const SHEET_NAME = "OCR";
-const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
-const SAVE_URL = "https://script.google.com/macros/s/AKfycby4xnVtuSZek7VigeWZI_41-IXfO99xUrNrbeKm31T2pHjbL8LLtvvoj3qklFHlYq1E/exec";
 const PROCESSED_SHEET_NAME = "OCR_PROCESSED";
+
+const URL =
+  `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
+
 const PROCESSED_URL =
   `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${PROCESSED_SHEET_NAME}`;
 
-let processedMap = {}; // callId -> processed row
-
-
-
-
-let filteredRows = [];
-
+const SAVE_URL =
+  "https://script.google.com/macros/s/AKfycby4xnVtuSZek7VigeWZI_41-IXfO99xUrNrbeKm31T2pHjbL8LLtvvoj3qklFHlYq1E/exec";
 
 /***************************************************
- * ROW STATUS STORAGE (LOCAL)
+ * GLOBAL STATE
+ ***************************************************/
+let filteredRows = [];
+let processedMap = {}; // callId -> completed data
+
+/***************************************************
+ * LOCAL STATUS STORAGE
  ***************************************************/
 function getRowStatus(callId) {
   return localStorage.getItem("row_status_" + callId) || "Pending";
@@ -24,7 +30,6 @@ function getRowStatus(callId) {
 function setRowStatus(callId, status) {
   localStorage.setItem("row_status_" + callId, status);
 }
-
 
 /***************************************************
  * HELPERS
@@ -52,7 +57,7 @@ function formatDate(date) {
 }
 
 /***************************************************
- * FETCH & FILTER DATA
+ * FETCH OCR DATA
  ***************************************************/
 fetch(URL)
   .then(res => res.text())
@@ -92,8 +97,9 @@ fetch(URL)
     document.getElementById("viewBtn").disabled = false;
   });
 
-
-
+/***************************************************
+ * FETCH PROCESSED DATA
+ ***************************************************/
 fetch(PROCESSED_URL)
   .then(res => res.text())
   .then(text => {
@@ -105,7 +111,6 @@ fetch(PROCESSED_URL)
       if (!c || !c[0]?.v) return;
 
       const callId = clean(c[0].v);
-
       processedMap[callId] = {
         engineNo: clean(c[17]?.v),
         failedPartName: clean(c[18]?.v),
@@ -114,10 +119,6 @@ fetch(PROCESSED_URL)
       };
     });
   });
-
-
-
-
 
 /***************************************************
  * RENDER TABLE
@@ -138,101 +139,95 @@ document.getElementById("viewBtn").addEventListener("click", () => {
       tr.appendChild(td);
     });
 
-    // Progress column
     const callId = clean(c[0]?.v);
     const currentStatus = getRowStatus(callId);
-    
+
     const statusTd = document.createElement("td");
     statusTd.textContent = currentStatus;
     statusTd.style.fontWeight = "bold";
-    
-    if (currentStatus === "Completed") {
-      statusTd.style.color = "green";
-    } else if (currentStatus === "In Progress") {
-      statusTd.style.color = "blue";
-    } else {
-      statusTd.style.color = "orange";
-    }
-    
+    statusTd.style.color =
+      currentStatus === "Completed" ? "green" :
+      currentStatus === "In Progress" ? "blue" : "orange";
+
     tr.appendChild(statusTd);
 
-    
-    // Action button
-    // Action buttons
     const btnTd = document.createElement("td");
-    
-    // Copy Format button
-    const btn = document.createElement("button");
-    btn.textContent = "Copy Format";
-    btn.onclick = () => generateCopyFormat(c, statusTd);
-    btnTd.appendChild(btn);
-    
-    // Mark Completed button
-    const doneBtn = document.createElement("button");
-    doneBtn.textContent = "Mark Completed";
-    doneBtn.style.marginLeft = "6px";
 
+    if (currentStatus !== "Completed") {
 
-    if (currentStatus === "Completed") {
+      const copyBtn = document.createElement("button");
+      copyBtn.textContent = "Copy Format";
+      copyBtn.onclick = () => generateCopyFormat(c, statusTd);
+      btnTd.appendChild(copyBtn);
+
+      const doneBtn = document.createElement("button");
+      doneBtn.textContent = "Mark Completed";
+      doneBtn.style.marginLeft = "6px";
+
+      doneBtn.onclick = () => {
+        const payload = {
+          callId,
+          createDate: c[1]?.f || "",
+          crmCallNo: clean(c[3]?.v),
+          subject: clean(c[4]?.v),
+          status: clean(c[5]?.v),
+          customer: clean(c[6]?.v),
+          mobile: clean(c[8]?.v),
+          machineNumber: clean(c[9]?.v),
+          machineModel: clean(c[10]?.v),
+          hmr: clean(c[11]?.v),
+          installDate: c[12]?.f || "",
+          callType: clean(c[19]?.v),
+          callSubType: clean(c[20]?.v),
+          branch: clean(c[21]?.v),
+          city: clean(c[23]?.v),
+          serviceEngg: clean(c[24]?.v),
+          machineStatus: clean(c[27]?.v),
+
+          engineNo: document.getElementById("engineInput")?.value || "",
+          failedPartName: document.getElementById("failedPartNameInput")?.value || "",
+          failedPartNo: document.getElementById("failedPartNoInput")?.value || "",
+          actionRequired: document.getElementById("actionRequiredInput")?.value || ""
+        };
+
+        fetch(SAVE_URL, {
+          method: "POST",
+          body: JSON.stringify(payload)
+        }).then(() => {
+
+          processedMap[callId] = {
+            engineNo: payload.engineNo,
+            failedPartName: payload.failedPartName,
+            failedPartNo: payload.failedPartNo,
+            actionRequired: payload.actionRequired
+          };
+
+          setRowStatus(callId, "Completed");
+          statusTd.textContent = "Completed";
+          statusTd.style.color = "green";
+
+          document.getElementById("engineInput").value = "";
+          document.getElementById("failedPartNameInput").value = "";
+          document.getElementById("failedPartNoInput").value = "";
+          document.getElementById("actionRequiredInput").value = "";
+          document.getElementById("copyBox").hidden = true;
+
+          alert("Saved to sheet ✔️");
+        }).catch(() => {
+          alert("❌ Failed to save");
+        });
+      };
+
+      btnTd.appendChild(doneBtn);
+
+    } else {
       const copyDoneBtn = document.createElement("button");
       copyDoneBtn.textContent = "Copy Completed";
-      copyDoneBtn.style.marginLeft = "6px";
-    
-      copyDoneBtn.onclick = () => {
-        openCompletedFormat(c);
-      };
-    
+      copyDoneBtn.onclick = () => openCompletedFormat(c);
       btnTd.appendChild(copyDoneBtn);
     }
 
-
-    
-    doneBtn.onclick = () => {
-
-      const payload = {
-        callId: clean(c[0]?.v),
-        createDate: c[1]?.f || "",
-        crmCallNo: clean(c[3]?.v),
-        subject: clean(c[4]?.v),
-        status: clean(c[5]?.v),
-        customer: clean(c[6]?.v),
-        mobile: clean(c[8]?.v),
-        machineNumber: clean(c[9]?.v),
-        machineModel: clean(c[10]?.v),
-        hmr: clean(c[11]?.v),
-        installDate: c[12]?.f || "",
-        callType: clean(c[19]?.v),
-        callSubType: clean(c[20]?.v),
-        branch: clean(c[21]?.v),
-        city: clean(c[23]?.v),
-        serviceEngg: clean(c[24]?.v),
-        machineStatus: clean(c[27]?.v),
-    
-        engineNo: document.getElementById("engineInput")?.value || "",
-        failedPartName: document.getElementById("failedPartNameInput")?.value || "",
-        failedPartNo: document.getElementById("failedPartNoInput")?.value || "",
-        actionRequired: document.getElementById("actionRequiredInput")?.value || ""
-      };
-    
-      fetch(SAVE_URL, {
-        method: "POST",
-        body: JSON.stringify(payload)
-      }).then(() => {
-        setRowStatus(callId, "Completed");
-        statusTd.textContent = "Completed";
-        statusTd.style.color = "green";
-        alert("Saved to sheet ✔️");
-      }).catch(() => {
-        alert("❌ Failed to save");
-      });
-    };
-
-    
-    btnTd.appendChild(doneBtn);
     tr.appendChild(btnTd);
-
-
-
     tbody.appendChild(tr);
   });
 
@@ -240,32 +235,25 @@ document.getElementById("viewBtn").addEventListener("click", () => {
 });
 
 /***************************************************
- * COPY FORMAT
+ * COPY FORMAT (IN PROGRESS)
  ***************************************************/
 function generateCopyFormat(c, statusTd) {
+  setRowStatus(clean(c[0]?.v), "In Progress");
+  statusTd.textContent = "In Progress";
+  statusTd.style.color = "blue";
 
-  if (statusTd) {
-    statusTd.textContent = "In Progress";
-    statusTd.style.color = "blue";
-    setRowStatus(clean(c[0]?.v), "In Progress");
-  }
-
-  
   const machineNo = clean(c[9]?.v);
 
-  // Copy machine number silently
   if (machineNo) {
-    const taTemp = document.createElement("textarea");
-    taTemp.value = machineNo;
-    document.body.appendChild(taTemp);
-    taTemp.select();
+    const t = document.createElement("textarea");
+    t.value = machineNo;
+    document.body.appendChild(t);
+    t.select();
     document.execCommand("copy");
-    document.body.removeChild(taTemp);
-
-    console.log("Machine Number copied:", machineNo);
+    document.body.removeChild(t);
   }
 
-  const text = `
+  document.getElementById("copyText").value = `
 Is M/C Covered Under JCB Care / Engine Care / Warranty : U/W
 Call ID : ${clean(c[0]?.v)}
 Customer Name : ${clean(c[6]?.v)}
@@ -286,78 +274,27 @@ Failed Part No. : __________
 Action Required : __________
 `.trim();
 
-  document.getElementById("copyText").value = text;
   document.getElementById("copyBox").hidden = false;
 }
 
-
-
-
-
-
 /***************************************************
- * CLIPBOARD
+ * COPY COMPLETED
  ***************************************************/
-function copyToClipboard() {
-  const ta = document.getElementById("copyText");
-  ta.select();
-  document.execCommand("copy");
-  alert("Copied ✔️");
-}
-
-function closeCopyBox() {
-  document.getElementById("copyBox").hidden = true;
-}
-
-/***************************************************
- * ENGINE NO INJECTION (TEXT-BASED, CORRECT)
- ***************************************************/
-function pasteEngineNo() {
-  navigator.clipboard.readText().then(text => {
-    if (!text.startsWith("__ENGINE_NO__=")) {
-      alert("❌ Clipboard does not contain Engine No");
-      return;
-    }
-
-    const engineNo = text.replace("__ENGINE_NO__=", "").trim();
-    const ta = document.getElementById("copyText");
-
-    if (!ta.value.includes("Engine No :")) {
-      alert("❌ Copy format not open");
-      return;
-    }
-
-    ta.value = ta.value.replace(
-      /Engine No\s*:\s*.*/i,
-      `Engine No : ${engineNo}`
-    );
-
-    const engineInput = document.getElementById("engineInput");
-    if (engineInput) {
-      engineInput.value = engineNo;
-    }
-
-
-    console.log("✅ Engine No injected:", engineNo);
-  });
-}
-
-
 function openCompletedFormat(c) {
   const callId = clean(c[0]?.v);
-  const completed = processedMap[callId];
+  const d = processedMap[callId];
 
-  if (!completed) {
-    alert("❌ Completed data not found in OCR_PROCESSED");
+  if (!d) {
+    alert("Completed data not found");
     return;
   }
 
-  const text = `
+  document.getElementById("copyText").value = `
 Is M/C Covered Under JCB Care / Engine Care / Warranty : U/W
-Call ID : ${clean(c[0]?.v)}
+Call ID : ${callId}
 Customer Name : ${clean(c[6]?.v)}
 Machine SL No. : ${clean(c[9]?.v)}
-Engine No : ${completed.engineNo}
+Engine No : ${d.engineNo}
 M/C Model : ${clean(c[10]?.v)}
 HMR : ${clean(c[11]?.v)}
 Date of Installation : ${formatDate(parseDate(c[12]))}
@@ -368,34 +305,38 @@ Dealership & Branch Name : FCV
 Engineer Name : ${clean(c[24]?.v)}
 M/C Condition : Running with problem
 Nature of Complaint : ${clean(c[4]?.v)}
-Failed Part Name : ${completed.failedPartName}
-Failed Part No. : ${completed.failedPartNo}
-Action Required : ${completed.actionRequired}
+Failed Part Name : ${d.failedPartName}
+Failed Part No. : ${d.failedPartNo}
+Action Required : ${d.actionRequired}
 `.trim();
 
-  document.getElementById("copyText").value = text;
   document.getElementById("copyBox").hidden = false;
 }
 
+/***************************************************
+ * PASTE ENGINE NO
+ ***************************************************/
+function pasteEngineNo() {
+  navigator.clipboard.readText().then(text => {
+    if (!text.startsWith("__ENGINE_NO__=")) return;
+    const engineNo = text.replace("__ENGINE_NO__=", "").trim();
 
+    document.getElementById("copyText").value =
+      document.getElementById("copyText").value.replace(
+        /Engine No\s*:\s*.*/i,
+        `Engine No : ${engineNo}`
+      );
 
+    document.getElementById("engineInput").value = engineNo;
+  });
+}
 
 /***************************************************
  * ENTER KEY = PASTE ENGINE NO
  ***************************************************/
-document.addEventListener("keydown", function (e) {
-  // Only react to Enter key
-  if (e.key !== "Enter") return;
-
-  const copyBox = document.getElementById("copyBox");
-
-  // Only when copy box is visible
-  if (!copyBox || copyBox.hidden) return;
-
-  // Prevent accidental new lines or form submits
-  e.preventDefault();
-
-  // Trigger paste engine number
-  pasteEngineNo();
+document.addEventListener("keydown", e => {
+  if (e.key === "Enter" && !document.getElementById("copyBox").hidden) {
+    e.preventDefault();
+    pasteEngineNo();
+  }
 });
-
