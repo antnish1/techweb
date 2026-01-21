@@ -110,7 +110,7 @@ fetch(PROCESSED_URL)
       const c = r.c;
       if (!c || !c[0]?.v) return;
 
-      const callId = clean(c[0].v);
+      const callId = String(c[0].v).trim();
       processedMap[callId] = {
         engineNo: clean(c[17]?.v),
         failedPartName: clean(c[18]?.v),
@@ -139,7 +139,7 @@ document.getElementById("viewBtn").addEventListener("click", () => {
       tr.appendChild(td);
     });
 
-    const callId = clean(c[0]?.v);
+    const callId = String(c[0]?.v).trim();
     const currentStatus = getRowStatus(callId);
 
     const statusTd = document.createElement("td");
@@ -281,7 +281,7 @@ Action Required : __________
  * COPY COMPLETED
  ***************************************************/
 function openCompletedFormat(c) {
-  const callId = clean(c[0]?.v);
+  const callId = String(c[0]?.v).trim();
   const d = processedMap[callId];
 
   if (!d) {
