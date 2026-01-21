@@ -2,6 +2,14 @@ const SHEET_ID = "15S8wwS4cbi8dFEvpoeIw0EDD1WMZceub5IpmtF5SFes";
 const SHEET_NAME = "OCR";
 const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
 const SAVE_URL = "https://script.google.com/macros/s/AKfycby4xnVtuSZek7VigeWZI_41-IXfO99xUrNrbeKm31T2pHjbL8LLtvvoj3qklFHlYq1E/exec";
+const PROCESSED_SHEET_NAME = "OCR_PROCESSED";
+const PROCESSED_URL =
+  `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${PROCESSED_SHEET_NAME}`;
+
+let processedMap = {}; // callId -> processed row
+
+
+
 
 let filteredRows = [];
 
@@ -84,6 +92,33 @@ fetch(URL)
     document.getElementById("viewBtn").disabled = false;
   });
 
+
+
+fetch(PROCESSED_URL)
+  .then(res => res.text())
+  .then(text => {
+    const json = JSON.parse(text.substring(47).slice(0, -2));
+    const rows = json.table.rows;
+
+    rows.forEach(r => {
+      const c = r.c;
+      if (!c || !c[0]?.v) return;
+
+      const callId = clean(c[0].v);
+
+      processedMap[callId] = {
+        engineNo: clean(c[17]?.v),
+        failedPartName: clean(c[18]?.v),
+        failedPartNo: clean(c[19]?.v),
+        actionRequired: clean(c[20]?.v)
+      };
+    });
+  });
+
+
+
+
+
 /***************************************************
  * RENDER TABLE
  ***************************************************/
@@ -136,6 +171,21 @@ document.getElementById("viewBtn").addEventListener("click", () => {
     const doneBtn = document.createElement("button");
     doneBtn.textContent = "Mark Completed";
     doneBtn.style.marginLeft = "6px";
+
+
+    if (currentStatus === "Completed") {
+      const copyDoneBtn = document.createElement("button");
+      copyDoneBtn.textContent = "Copy Completed";
+      copyDoneBtn.style.marginLeft = "6px";
+    
+      copyDoneBtn.onclick = () => {
+        openCompletedFormat(c);
+      };
+    
+      btnTd.appendChild(copyDoneBtn);
+    }
+
+
     
     doneBtn.onclick = () => {
 
@@ -291,6 +341,43 @@ function pasteEngineNo() {
     console.log("✅ Engine No injected:", engineNo);
   });
 }
+
+
+function openCompletedFormat(c) {
+  const callId = clean(c[0]?.v);
+  const completed = processedMap[callId];
+
+  if (!completed) {
+    alert("❌ Completed data not found in OCR_PROCESSED");
+    return;
+  }
+
+  const text = `
+Is M/C Covered Under JCB Care / Engine Care / Warranty : U/W
+Call ID : ${clean(c[0]?.v)}
+Customer Name : ${clean(c[6]?.v)}
+Machine SL No. : ${clean(c[9]?.v)}
+Engine No : ${completed.engineNo}
+M/C Model : ${clean(c[10]?.v)}
+HMR : ${clean(c[11]?.v)}
+Date of Installation : ${formatDate(parseDate(c[12]))}
+Date of Failure : ${formatDate(parseDate(c[1]))}
+M/C Location : ${clean(c[21]?.v)}
+M/C Application : Material Handling
+Dealership & Branch Name : FCV
+Engineer Name : ${clean(c[24]?.v)}
+M/C Condition : Running with problem
+Nature of Complaint : ${clean(c[4]?.v)}
+Failed Part Name : ${completed.failedPartName}
+Failed Part No. : ${completed.failedPartNo}
+Action Required : ${completed.actionRequired}
+`.trim();
+
+  document.getElementById("copyText").value = text;
+  document.getElementById("copyBox").hidden = false;
+}
+
+
 
 
 /***************************************************
