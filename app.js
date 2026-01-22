@@ -154,13 +154,22 @@ document.getElementById("viewBtn").onclick = () => {
  ***************************************************/
 function openModal(callId) {
   activeRow = filteredRows.find(r => clean(r[0]?.v) === callId);
+  if (!activeRow) return;
 
-  // 🔄 ALWAYS RESET INPUTS FOR NEW POPUP
-  resetModalInputs();
+  const saved = processedMap[callId];
 
-  // 🔁 Refresh copy text with empty placeholders
+  if (saved) {
+    // 🟢 COMPLETED ROW → LOAD SAVED DATA
+    engineInput.value = saved.engineNo || "";
+    failedPartNameInput.value = saved.failedPartName || "";
+    failedPartNoInput.value = saved.failedPartNo || "";
+    actionRequiredInput.value = saved.actionRequired || "";
+  } else {
+    // 🟡 PENDING ROW → RESET INPUTS
+    resetModalInputs();
+  }
+
   refreshCopyText();
-
   document.getElementById("copyModal").hidden = false;
 }
 
