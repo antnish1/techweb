@@ -264,3 +264,25 @@ Action Required : ${d.actionRequired}
 
   document.getElementById("copyBox").hidden = false;
 }
+
+
+
+/***************************************************
+ * POPUP BUTTON HANDLERS (REQUIRED)
+ ***************************************************/
+function copyToClipboard() {
+  const ta = document.getElementById("copyText");
+  if (!ta) return;
+
+  ta.select();
+  ta.setSelectionRange(0, 99999); // mobile support
+  document.execCommand("copy");
+
+  alert("Copied ✔️");
+}
+
+function closeCopyBox() {
+  const box = document.getElementById("copyBox");
+  if (box) box.hidden = true;
+}
+
