@@ -400,19 +400,33 @@ function renderCompletedTable() {
 
 
 function openCompletedOnly(callId) {
-  closeAllModals(); // 🔥 THIS IS THE KEY FIX
+  closeAllModals();
 
   const saved = processedMap[callId];
   if (!saved) return;
+
+  // 🔥 CREATE A FAKE activeRow FOR COPY FORMAT
+  activeRow = {
+    0: { v: saved.callId },
+    1: { v: saved.createDate },
+    4: { v: saved.subject },
+    6: { v: saved.customer },
+    9: { v: saved.machineNumber },
+    10: { v: saved.machineModel },
+    11: { v: saved.hmr },
+    21: { v: "-" },
+    24: { v: saved.serviceEngg }
+  };
 
   engineInput.value = saved.engineNo || "";
   failedPartNameInput.value = saved.failedPartName || "";
   failedPartNoInput.value = saved.failedPartNo || "";
   actionRequiredInput.value = saved.actionRequired || "";
 
-  refreshCopyText();
+  refreshCopyText(); // ✅ NOW WORKS
   document.getElementById("copyModal").hidden = false;
 }
+
 
 
 
