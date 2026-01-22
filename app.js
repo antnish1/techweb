@@ -12,12 +12,41 @@ let processed = {};
 const clean = v => v ? v.toString().trim() : "";
 
 fetch(URL)
-  .then(r => r.text())
-  .then(t => {
-    const rows = JSON.parse(t.substring(47).slice(0, -2)).table.rows;
+  .then(res => res.text())
+  .then(text => {
+    const json = JSON.parse(text.substring(47).slice(0, -2));
+    const rows = json.table.rows;
+
+    const today = new Date();
+    const oneMonthAgo = new Date(today);
+    oneMonthAgo.setMonth(today.getMonth() - 1);
+
+    const oneYearAgo = new Date(today);
+    oneYearAgo.setFullYear(today.getFullYear() - 1);
+
     rows.forEach(r => {
-      if (clean(r.c?.[5]?.v) === "3. Fix") filtered.push(r.c);
+      const c = r.c;
+      if (!c) return;
+
+      const createDate = parseDate(c[1]);
+      const installDate = parseDate(c[12]);
+
+      if (!createDate || !installDate) return;
+
+      const isMatch =
+        createDate >= oneMonthAgo &&
+        installDate >= oneYearAgo &&
+        clean(c[5]?.v) === "3. Fix" &&
+        clean(c[18]?.v) === "OnSite" &&
+        clean(c[19]?.v) === "Warranty" &&
+        clean(c[20]?.v) === "Failure" &&
+        clean(c[27]?.v) !== "Service";
+
+      if (isMatch) {
+        filtered.push(c);
+      }
     });
+
     document.getElementById("count").innerText = filtered.length;
     document.getElementById("viewBtn").disabled = false;
   });
