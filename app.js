@@ -213,9 +213,14 @@ function saveCompleted() {
     actionRequired: actionRequiredInput.value.trim()
   };
 
-  // Basic validation
-  if (!payload.engineNo || !payload.failedPartName) {
-    alert("Please fill at least Engine No and Failed Part Name");
+  // 🔒 STRICT VALIDATION – ALL FIELDS REQUIRED
+  if (
+    !payload.engineNo ||
+    !payload.failedPartName ||
+    !payload.failedPartNo ||
+    !payload.actionRequired
+  ) {
+    alert("Please fill ALL mandatory fields before saving.");
     return;
   }
 
@@ -228,7 +233,7 @@ function saveCompleted() {
       // Update local state
       processedMap[callId] = payload;
 
-      // Refresh table UI
+      // Refresh table
       document.getElementById("viewBtn").click();
 
       closeModal();
