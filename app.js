@@ -438,6 +438,9 @@ Action Required : ${d.actionRequired}
 let activeCompletedRow = null;
 
 function openTWModal(callId) {
+  // 🔴 CLOSE COPY MODAL FIRST
+  document.getElementById("copyModal").hidden = true;
+
   activeCompletedRow = completedRows.find(r => r.callId === callId);
   if (!activeCompletedRow) {
     alert("Completed record not found");
