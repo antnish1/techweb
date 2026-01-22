@@ -17,48 +17,68 @@ body {
 /***************************************************
  * HEADER
  ***************************************************/
+/***************************************************
+ * TOP BAR (WITH KPI)
+ ***************************************************/
 .topbar {
   background: linear-gradient(135deg, #0d6efd, #003f9e);
   color: #fff;
-  padding: 22px 28px;
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
 }
 
-.topbar h1 {
-  font-size: 22px;
+.topbar-left h1 {
+  font-size: 20px;
   font-weight: 600;
 }
 
-.topbar p {
-  font-size: 13px;
+.topbar-left p {
+  font-size: 12px;
   opacity: 0.9;
 }
 
-/***************************************************
- * STATS CARD
- ***************************************************/
-.stats {
-  padding: 20px;
+.topbar-right {
+  display: flex;
+  align-items: center;
 }
 
-.stat-card {
-  background: #fff;
-  width: 280px;
-  padding: 18px;
-  border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+.top-stat {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 12px 16px;
+  border-radius: 10px;
+  text-align: center;
+  min-width: 200px;
 }
 
-.stat-card span {
-  font-size: 13px;
-  color: #6c757d;
-}
-
-.stat-card strong {
+.top-stat span {
   display: block;
-  font-size: 40px;
-  color: #0d6efd;
-  margin: 10px 0;
+  font-size: 12px;
+  opacity: 0.9;
 }
+
+.top-stat strong {
+  display: block;
+  font-size: 32px;
+  font-weight: 600;
+  margin: 4px 0;
+}
+
+.top-stat button {
+  background: #ffffff;
+  color: #0d6efd;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.top-stat button:hover {
+  background: #e7f1ff;
+}
+
+
 
 /***************************************************
  * BUTTONS
