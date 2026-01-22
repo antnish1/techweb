@@ -372,7 +372,7 @@ function renderCompletedTable() {
 
     tr.innerHTML = `
       <td>${r.callId}</td>
-      <td>${r.createDate || ""}</td>
+      <td>${formatGvizDate(r.createDate)}</td>
       <td>${r.subject || ""}</td>
       <td>${r.customer || ""}</td>
       <td>${r.machineNumber || ""}</td>
@@ -484,6 +484,23 @@ function saveTWDone() {
     .catch(() => alert("Failed to save Techweb Number"));
 }
 
+function formatGvizDate(value) {
+  if (!value) return "";
+
+  // Handles: Date(2026,0,10)
+  if (typeof value === "string" && value.startsWith("Date(")) {
+    const parts = value.match(/\d+/g).map(Number);
+    const d = new Date(parts[0], parts[1], parts[2]);
+    return formatDate(d);
+  }
+
+  // Handles real Date objects
+  if (value instanceof Date) {
+    return formatDate(value);
+  }
+
+  return value;
+}
 
 
 document.addEventListener("DOMContentLoaded", () => {
