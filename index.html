@@ -1,78 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Techweb Dashboard</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>Techweb Warranty Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
-  <h1>Techweb – Warranty Failure Dashboard</h1>
+<header class="topbar">
+  <h1>Techweb Warranty Failure Dashboard</h1>
+  <p>Live Warranty Failure Tracking System</p>
+</header>
 
-  <div class="card">
-    <h2>Total Matching Calls</h2>
-    <div id="count">Loading...</div>
+<section class="stats">
+  <div class="stat-card">
+    <span>Total Matching Calls</span>
+    <strong id="count">Loading…</strong>
     <button id="viewBtn" disabled>View Records</button>
   </div>
+</section>
 
+<section class="table-section">
   <table id="dataTable" hidden>
     <thead>
       <tr>
         <th>Call ID</th>
         <th>Create Date</th>
-        <th>CRM Call No</th>
         <th>Subject</th>
-        <th>Status</th>
         <th>Customer</th>
-        <th>Mobile</th>
-        <th>Machine Number</th>
-        <th>Machine Model</th>
+        <th>Machine No</th>
+        <th>Model</th>
         <th>HMR</th>
-        <th>Install Date</th>
-        <th>Call Type</th>
-        <th>Call Sub Type</th>
-        <th>Branch</th>
-        <th>City</th>
-        <th>Service Engg.</th>
-        <th>Machine Status</th>
-        <th>Progress</th>
+        <th>Engineer</th>
+        <th>Status</th>
         <th>Action</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
+</section>
 
-<div id="copyBox" hidden>
+<!-- Modal -->
+<div class="modal" id="copyModal" hidden>
+  <div class="modal-content">
+    <h3>Warranty Copy Format</h3>
 
-
-  <div id="copyBoxContent">
-    <h3>Copy Format</h3>
     <textarea id="copyText"></textarea>
-  
-    <hr>
-  
-    <label>Engine No</label><br>
-    <input id="engineInput" type="text" style="width:100%"><br><br>
-    
-    <label>Failed Part Name</label><br>
-    <input id="failedPartNameInput" type="text" style="width:100%"><br><br>
-    
-    <label>Failed Part No</label><br>
-    <input id="failedPartNoInput" type="text" style="width:100%"><br><br>
-    
-    <label>Action Required</label><br>
-    <textarea id="actionRequiredInput" style="width:100%"></textarea><br><br>
-  
-    
-    <br />
-    <button onclick="copyToClipboard()">Copy</button>
-    <button onclick="closeCopyBox()">Close</button>
-    <button onclick="pasteEngineNo()">Paste Engine No</button>
 
+    <div class="form-grid">
+      <input id="engineInput" placeholder="Engine No">
+      <input id="failedPartNameInput" placeholder="Failed Part Name">
+      <input id="failedPartNoInput" placeholder="Failed Part No">
+      <textarea id="actionRequiredInput" placeholder="Action Required"></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button onclick="copyToClipboard()">Copy</button>
+      <button onclick="closeModal()" class="secondary">Close</button>
+    </div>
+  </div>
 </div>
 
-
-  
-  <script src="app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
