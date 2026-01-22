@@ -231,11 +231,13 @@ Action Required : ${data.actionRequired || "__________"}
  * SAVE + COPY
  ***************************************************/
 function copyToClipboard() {
+  refreshCopyText(); // ✅ ensure latest data
   const ta = document.getElementById("copyText");
   ta.select();
   document.execCommand("copy");
   alert("Copied ✔️");
 }
+
 
 function saveCompleted() {
   if (!activeRow) {
