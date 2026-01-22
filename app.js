@@ -198,16 +198,13 @@ function saveCompleted() {
     return;
   }
 
+  const saveBtn = document.getElementById("saveBtn");
+  const loader = document.getElementById("saveLoader");
+
   const c = activeRow;
   const callId = clean(c[0]?.v);
 
-  if (!callId) {
-    alert("Invalid Call ID");
-    return;
-  }
-
   const payload = {
-    // 🔹 ORIGINAL CALL DATA (FULL DETAILS)
     callId,
     createDate: formatDate(parseDate(c[1])),
     crmCallNo: clean(c[3]?.v),
@@ -226,14 +223,13 @@ function saveCompleted() {
     serviceEngg: clean(c[24]?.v),
     machineStatus: clean(c[27]?.v),
 
-    // 🔹 USER INPUT (MANDATORY)
     engineNo: engineInput.value.trim(),
     failedPartName: failedPartNameInput.value.trim(),
     failedPartNo: failedPartNoInput.value.trim(),
     actionRequired: actionRequiredInput.value.trim()
   };
 
-  // 🔒 VALIDATION – ALL INPUTS REQUIRED
+  // 🔒 Validation
   if (
     !payload.engineNo ||
     !payload.failedPartName ||
@@ -244,26 +240,31 @@ function saveCompleted() {
     return;
   }
 
+  // 🔄 Show loader + disable buttons
+  loader.hidden = false;
+  saveBtn.disabled = true;
+
   fetch(SAVE_URL, {
     method: "POST",
     body: JSON.stringify(payload)
   })
     .then(res => res.text())
     .then(() => {
-      // Mark as completed locally
       processedMap[callId] = payload;
-
-      // Refresh table UI
       document.getElementById("viewBtn").click();
-
       closeModal();
-      alert("Full details saved to OCR_PROCESSED ✔️");
+      alert("Full details saved ✔️");
     })
     .catch(err => {
       console.error(err);
       alert("Failed to save data ❌");
+    })
+    .finally(() => {
+      loader.hidden = true;
+      saveBtn.disabled = false;
     });
 }
+
 
 
 function closeModal() {
