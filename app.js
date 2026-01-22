@@ -321,5 +321,7 @@ function resetModalInputs() {
 
 
 function closeModal() {
+  resetModalInputs();
   document.getElementById("copyModal").hidden = true;
 }
+
