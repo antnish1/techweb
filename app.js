@@ -250,8 +250,9 @@ Machine SL No. : ${clean(c[9]?.v)}
 Engine No : ${data.engineNo || "__________"}
 M/C Model : ${clean(c[10]?.v)}
 HMR : ${clean(c[11]?.v)}
-Date of Installation : ${formatDate(parseDate(c[12]))}
-Date of Failure : ${formatDate(parseDate(c[1]))}
+Date of Installation : ${formatGvizDate(c[12]?.v)}
+Date of Failure : ${formatGvizDate(c[1]?.v)}
+
 M/C Location : ${clean(c[21]?.v)}
 M/C Application : Material Handling
 Dealership & Branch Name : FCV
@@ -414,16 +415,18 @@ function openCompletedOnly(callId) {
 
   // 🔥 CREATE A FAKE activeRow FOR COPY FORMAT
   activeRow = {
-    0: { v: saved.callId },
-    1: { v: saved.createDate },
-    4: { v: saved.subject },
-    6: { v: saved.customer },
-    9: { v: saved.machineNumber },
-    10: { v: saved.machineModel },
-    11: { v: saved.hmr },
-    21: { v: "-" },
-    24: { v: saved.serviceEngg }
-  };
+  0:  { v: saved.callId },
+  1:  { v: saved.failureDate },   // ✅ Date of Failure (GViz)
+  4:  { v: saved.subject },
+  6:  { v: saved.customer },
+  9:  { v: saved.machineNumber },
+  10: { v: saved.machineModel },
+  11: { v: saved.hmr },
+  12: { v: saved.installDate },   // ✅ Date of Installation (GViz)
+  21: { v: saved.location },      // ✅ Location
+  24: { v: saved.serviceEngg }
+};
+
 
   engineInput.value = saved.engineNo || "";
   failedPartNameInput.value = saved.failedPartName || "";
