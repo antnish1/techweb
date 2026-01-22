@@ -15,10 +15,11 @@ const SAVE_URL =
   "https://script.google.com/macros/s/AKfycby4xnVtuSZek7VigeWZI_41-IXfO99xUrNrbeKm31T2pHjbL8LLtvvoj3qklFHlYq1E/exec";
 
 /***************************************************
- * GLOBAL STATE
+ * STATE
  ***************************************************/
 let filteredRows = [];
-let processedMap = {}; // callId -> completed data
+let processedMap = {};
+let activeRow = null;
 
 /***************************************************
  * HELPERS
@@ -29,14 +30,11 @@ function clean(v) {
 
 function parseDate(cell) {
   if (!cell) return null;
-
   if (cell.v instanceof Date) return cell.v;
-
   if (cell.f) {
     const d = new Date(cell.f);
     return isNaN(d) ? null : d;
   }
-
   const d = new Date(cell.v);
   return isNaN(d) ? null : d;
 }
@@ -50,13 +48,12 @@ function formatDate(date) {
 }
 
 /***************************************************
- * FETCH OCR DATA + APPLY FULL FILTERING
+ * FETCH MAIN DATA (FULL FILTER)
  ***************************************************/
 fetch(URL)
-  .then(res => res.text())
-  .then(text => {
-    const json = JSON.parse(text.substring(47).slice(0, -2));
-    const rows = json.table.rows;
+  .then(r => r.text())
+  .then(t => {
+    const rows = JSON.parse(t.substring(47).slice(0, -2)).table.rows;
 
     const today = new Date();
     const oneMonthAgo = new Date(today);
@@ -71,10 +68,9 @@ fetch(URL)
 
       const createDate = parseDate(c[1]);
       const installDate = parseDate(c[12]);
-
       if (!createDate || !installDate) return;
 
-      const isMatch =
+      const match =
         createDate >= oneMonthAgo &&
         installDate >= oneYearAgo &&
         clean(c[5]?.v) === "3. Fix" &&
@@ -83,9 +79,7 @@ fetch(URL)
         clean(c[20]?.v) === "Failure" &&
         clean(c[27]?.v) !== "Service";
 
-      if (isMatch) {
-        filteredRows.push(c);
-      }
+      if (match) filteredRows.push(c);
     });
 
     document.getElementById("count").innerText = filteredRows.length;
@@ -93,20 +87,16 @@ fetch(URL)
   });
 
 /***************************************************
- * FETCH PROCESSED DATA (SOURCE OF TRUTH)
+ * FETCH PROCESSED DATA
  ***************************************************/
 fetch(PROCESSED_URL)
-  .then(res => res.text())
-  .then(text => {
-    const json = JSON.parse(text.substring(47).slice(0, -2));
-    const rows = json.table.rows;
-
+  .then(r => r.text())
+  .then(t => {
+    const rows = JSON.parse(t.substring(47).slice(0, -2)).table.rows;
     rows.forEach(r => {
       const c = r.c;
       if (!c || !c[0]?.v) return;
-
-      const callId = clean(c[0].v);
-      processedMap[callId] = {
+      processedMap[clean(c[0].v)] = {
         engineNo: clean(c[17]?.v),
         failedPartName: clean(c[18]?.v),
         failedPartNo: clean(c[19]?.v),
@@ -118,111 +108,99 @@ fetch(PROCESSED_URL)
 /***************************************************
  * RENDER TABLE
  ***************************************************/
-document.getElementById("viewBtn").addEventListener("click", () => {
+document.getElementById("viewBtn").onclick = () => {
   const tbody = document.querySelector("#dataTable tbody");
   tbody.innerHTML = "";
 
   filteredRows.forEach(c => {
-    const tr = document.createElement("tr");
-
-    [
-      0, 1, 4, 6, 9, 10, 11, 24
-    ].forEach(i => {
-      const td = document.createElement("td");
-      td.textContent = c[i]?.f || c[i]?.v || "";
-      tr.appendChild(td);
-    });
-
     const callId = clean(c[0]?.v);
-    const isCompleted = !!processedMap[callId];
+    const done = processedMap[callId];
 
-    const statusTd = document.createElement("td");
-    statusTd.textContent = isCompleted ? "Completed" : "Pending";
-    statusTd.className = isCompleted ? "status-done" : "status-pending";
-    tr.appendChild(statusTd);
-
-    const actionTd = document.createElement("td");
-    const btn = document.createElement("button");
-    btn.textContent = isCompleted ? "Copy Completed" : "Open";
-    btn.onclick = () =>
-      isCompleted ? openCompletedFormat(c) : generateCopyFormat(c);
-    actionTd.appendChild(btn);
-    tr.appendChild(actionTd);
-
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${callId}</td>
+      <td>${formatDate(parseDate(c[1]))}</td>
+      <td>${clean(c[4]?.v)}</td>
+      <td>${clean(c[6]?.v)}</td>
+      <td>${clean(c[9]?.v)}</td>
+      <td>${clean(c[10]?.v)}</td>
+      <td>${clean(c[11]?.v)}</td>
+      <td>${clean(c[24]?.v)}</td>
+      <td class="${done ? "status-done" : "status-pending"}">
+        ${done ? "Completed" : "Pending"}
+      </td>
+      <td>
+        <button onclick="openModal('${callId}')">
+          ${done ? "Copy" : "Process"}
+        </button>
+      </td>
+    `;
     tbody.appendChild(tr);
   });
 
   document.getElementById("dataTable").hidden = false;
-});
+};
 
 /***************************************************
- * COPY FORMAT (PENDING)
+ * MODAL LOGIC
  ***************************************************/
-function generateCopyFormat(c) {
+function openModal(callId) {
+  activeRow = filteredRows.find(r => clean(r[0]?.v) === callId);
+  const done = processedMap[callId];
+
+  document.getElementById("engineInput").value = done?.engineNo || "";
+  document.getElementById("failedPartNameInput").value = done?.failedPartName || "";
+  document.getElementById("failedPartNoInput").value = done?.failedPartNo || "";
+  document.getElementById("actionRequiredInput").value = done?.actionRequired || "";
+
+  generateCopyText(done);
+  document.getElementById("copyModal").hidden = false;
+}
+
+function generateCopyText(done) {
+  const c = activeRow;
   document.getElementById("copyText").value = `
-Is M/C Covered Under JCB Care / Engine Care / Warranty : U/W
 Call ID : ${clean(c[0]?.v)}
-Customer Name : ${clean(c[6]?.v)}
-Machine SL No. : ${clean(c[9]?.v)}
-Engine No : __________
-M/C Model : ${clean(c[10]?.v)}
+Customer : ${clean(c[6]?.v)}
+Machine No : ${clean(c[9]?.v)}
+Engine No : ${done?.engineNo || "__________"}
+Model : ${clean(c[10]?.v)}
 HMR : ${clean(c[11]?.v)}
-Date of Installation : ${formatDate(parseDate(c[12]))}
-Date of Failure : ${formatDate(parseDate(c[1]))}
-M/C Location : ${clean(c[21]?.v)}
-M/C Application : Material Handling
-Dealership & Branch Name : FCV
-Engineer Name : ${clean(c[24]?.v)}
-M/C Condition : Running with problem
-Nature of Complaint : ${clean(c[4]?.v)}
-Failed Part Name : __________
-Failed Part No. : __________
-Action Required : __________
+Failure Date : ${formatDate(parseDate(c[1]))}
+Failed Part : ${done?.failedPartName || "__________"}
+Action : ${done?.actionRequired || "__________"}
 `.trim();
-
-  document.getElementById("copyModal").hidden = false;
 }
 
 /***************************************************
- * COPY COMPLETED
- ***************************************************/
-function openCompletedFormat(c) {
-  const callId = clean(c[0]?.v);
-  const d = processedMap[callId];
-
-  document.getElementById("copyText").value = `
-Is M/C Covered Under JCB Care / Engine Care / Warranty : U/W
-Call ID : ${callId}
-Customer Name : ${clean(c[6]?.v)}
-Machine SL No. : ${clean(c[9]?.v)}
-Engine No : ${d.engineNo}
-M/C Model : ${clean(c[10]?.v)}
-HMR : ${clean(c[11]?.v)}
-Date of Installation : ${formatDate(parseDate(c[12]))}
-Date of Failure : ${formatDate(parseDate(c[1]))}
-M/C Location : ${clean(c[21]?.v)}
-M/C Application : Material Handling
-Dealership & Branch Name : FCV
-Engineer Name : ${clean(c[24]?.v)}
-M/C Condition : Running with problem
-Nature of Complaint : ${clean(c[4]?.v)}
-Failed Part Name : ${d.failedPartName}
-Failed Part No. : ${d.failedPartNo}
-Action Required : ${d.actionRequired}
-`.trim();
-
-  document.getElementById("copyModal").hidden = false;
-}
-
-/***************************************************
- * MODAL CONTROLS
+ * SAVE + COPY
  ***************************************************/
 function copyToClipboard() {
   const ta = document.getElementById("copyText");
   ta.select();
-  ta.setSelectionRange(0, 99999);
   document.execCommand("copy");
   alert("Copied ✔️");
+}
+
+function saveCompleted() {
+  const callId = clean(activeRow[0]?.v);
+
+  const payload = {
+    callId,
+    engineNo: engineInput.value,
+    failedPartName: failedPartNameInput.value,
+    failedPartNo: failedPartNoInput.value,
+    actionRequired: actionRequiredInput.value
+  };
+
+  fetch(SAVE_URL, {
+    method: "POST",
+    body: JSON.stringify(payload)
+  }).then(() => {
+    processedMap[callId] = payload;
+    closeModal();
+    alert("Saved ✔️");
+  });
 }
 
 function closeModal() {
