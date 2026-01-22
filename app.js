@@ -93,17 +93,25 @@ fetch(PROCESSED_URL)
   .then(r => r.text())
   .then(t => {
     const rows = JSON.parse(t.substring(47).slice(0, -2)).table.rows;
+
     rows.forEach(r => {
       const c = r.c;
       if (!c || !c[0]?.v) return;
-      processedMap[clean(c[0].v)] = {
+
+      const callId = clean(c[0].v);
+      processedMap[callId] = {
         engineNo: clean(c[17]?.v),
         failedPartName: clean(c[18]?.v),
         failedPartNo: clean(c[19]?.v),
         actionRequired: clean(c[20]?.v)
       };
     });
+
+    // ✅ UPDATE COMPLETED KPI
+    document.getElementById("completedCount").innerText =
+      Object.keys(processedMap).length;
   });
+;
 
 /***************************************************
  * RENDER TABLE
