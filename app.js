@@ -356,38 +356,7 @@ function closeModal() {
   document.getElementById("copyModal").hidden = true;
 }
 
-function renderPendingTable() {
-  const tbody = document.querySelector("#dataTable tbody");
-  tbody.innerHTML = "";
 
-  filteredRows.forEach(c => {
-    const callId = clean(c[0]?.v);
-    const done = processedMap[callId];
-
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${callId}</td>
-      <td>${formatDate(parseDate(c[1]))}</td>
-      <td>${clean(c[4]?.v)}</td>
-      <td>${clean(c[6]?.v)}</td>
-      <td>${clean(c[9]?.v)}</td>
-      <td>${clean(c[10]?.v)}</td>
-      <td>${clean(c[11]?.v)}</td>
-      <td>${clean(c[24]?.v)}</td>
-      <td class="${done ? "status-done" : "status-pending"}">
-        ${done ? "Completed" : "Pending"}
-      </td>
-      <td>
-        <button onclick="openModal('${callId}')">
-          ${done ? "Copy" : "Process"}
-        </button>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  });
-
-  document.getElementById("dataTable").hidden = false;
-}
 
 function renderCompletedTable() {
   const tbody = document.querySelector("#dataTable tbody");
@@ -451,3 +420,24 @@ Failed Part No. : ${d.failedPartNo}
 Action Required : ${d.actionRequired}
 `.trim();
 }
+
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  const viewBtn = document.getElementById("viewBtn");
+  const viewCompletedBtn = document.getElementById("viewCompletedBtn");
+
+  if (viewBtn) {
+    viewBtn.onclick = () => {
+      currentView = "pending";
+      renderPendingTable();
+    };
+  }
+
+  if (viewCompletedBtn) {
+    viewCompletedBtn.onclick = () => {
+      currentView = "completed";
+      renderCompletedTable();
+    };
+  }
+});
