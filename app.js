@@ -381,10 +381,11 @@ function renderCompletedTable() {
       <td>${r.serviceEngg || ""}</td>
       <td class="status-done">Completed</td>
       <td>
+        <button onclick="openCompletedOnly('${r.callId}')">Copy</button>
         ${
           isTWDone
-            ? `<button disabled>TW DONE ✔</button>`
-            : `<button onclick="openTWModal('${r.callId}')">TW DONE</button>`
+            ? `<button disabled style="margin-left:6px;">TW DONE ✔</button>`
+            : `<button onclick="openTWModal('${r.callId}')" style="margin-left:6px;">TW DONE</button>`
         }
       </td>
     `;
@@ -394,6 +395,7 @@ function renderCompletedTable() {
 
   document.getElementById("dataTable").hidden = false;
 }
+
 
 
 function openCompletedOnly(callId) {
