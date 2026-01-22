@@ -233,3 +233,9 @@ tbody tr:hover {
     max-height: 90vh;
   }
 }
+
+/* FORCE hidden attribute to work */
+[hidden] {
+  display: none !important;
+}
+
