@@ -97,43 +97,41 @@ fetch(PROCESSED_URL)
   .then(t => {
     const rows = JSON.parse(t.substring(47).slice(0, -2)).table.rows;
 
+    completedRows = [];
+    processedMap = {};
+
     rows.forEach(r => {
       const c = r.c;
       if (!c || !c[0]?.v) return;
 
-      const callId = clean(c[0].v);
       const techwebNo = clean(c[21]?.v); // Column V
+
       const rowData = {
-        callId,
+        callId: clean(c[0].v),
         createDate: c[1]?.v,
-        crmCallNo: c[2]?.v,
         subject: c[3]?.v,
-        status: c[4]?.v,
         customer: c[5]?.v,
-        mobile: c[6]?.v,
         machineNumber: c[7]?.v,
         machineModel: c[8]?.v,
         hmr: c[9]?.v,
-        installDate: c[10]?.v,
-        callType: c[11]?.v,
-        callSubType: c[12]?.v,
-        branch: c[13]?.v,
-        city: c[14]?.v,
         serviceEngg: c[15]?.v,
-        machineStatus: c[16]?.v,
         engineNo: c[17]?.v,
         failedPartName: c[18]?.v,
         failedPartNo: c[19]?.v,
         actionRequired: c[20]?.v,
-        techwebNo // 👈 NEW
+        techwebNo
       };
 
-      processedMap[callId] = rowData;
+      processedMap[rowData.callId] = rowData;
       completedRows.push(rowData);
     });
 
+    // ✅ UPDATE KPIs
     document.getElementById("completedCount").innerText = completedRows.length;
+    document.getElementById("twDoneCount").innerText =
+      completedRows.filter(r => r.techwebNo).length;
   });
+
 
 ;
 
