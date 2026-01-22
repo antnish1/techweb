@@ -198,7 +198,8 @@ function saveCompleted() {
     return;
   }
 
-  const callId = clean(activeRow[0]?.v);
+  const c = activeRow;
+  const callId = clean(c[0]?.v);
 
   if (!callId) {
     alert("Invalid Call ID");
@@ -206,14 +207,33 @@ function saveCompleted() {
   }
 
   const payload = {
+    // 🔹 ORIGINAL CALL DATA (FULL DETAILS)
     callId,
+    createDate: formatDate(parseDate(c[1])),
+    crmCallNo: clean(c[3]?.v),
+    subject: clean(c[4]?.v),
+    status: clean(c[5]?.v),
+    customer: clean(c[6]?.v),
+    mobile: clean(c[8]?.v),
+    machineNumber: clean(c[9]?.v),
+    machineModel: clean(c[10]?.v),
+    hmr: clean(c[11]?.v),
+    installDate: formatDate(parseDate(c[12])),
+    callType: clean(c[18]?.v),
+    callSubType: clean(c[19]?.v),
+    branch: clean(c[21]?.v),
+    city: clean(c[23]?.v),
+    serviceEngg: clean(c[24]?.v),
+    machineStatus: clean(c[27]?.v),
+
+    // 🔹 USER INPUT (MANDATORY)
     engineNo: engineInput.value.trim(),
     failedPartName: failedPartNameInput.value.trim(),
     failedPartNo: failedPartNoInput.value.trim(),
     actionRequired: actionRequiredInput.value.trim()
   };
 
-  // 🔒 STRICT VALIDATION – ALL FIELDS REQUIRED
+  // 🔒 VALIDATION – ALL INPUTS REQUIRED
   if (
     !payload.engineNo ||
     !payload.failedPartName ||
@@ -230,14 +250,14 @@ function saveCompleted() {
   })
     .then(res => res.text())
     .then(() => {
-      // Update local state
+      // Mark as completed locally
       processedMap[callId] = payload;
 
-      // Refresh table
+      // Refresh table UI
       document.getElementById("viewBtn").click();
 
       closeModal();
-      alert("Saved to OCR_PROCESSED ✔️");
+      alert("Full details saved to OCR_PROCESSED ✔️");
     })
     .catch(err => {
       console.error(err);
