@@ -107,20 +107,27 @@ fetch(PROCESSED_URL)
       const techwebNo = clean(c[21]?.v); // Column V
 
       const rowData = {
-        callId: clean(c[0].v),
-        createDate: c[1]?.v,
+        callId: clean(c[0]?.v),
+      
+        failureDate: c[1]?.v,          // Date of Failure
+        installDate: c[10]?.v,         // Date of Installation
+        location: c[14]?.v,            // M/C Location (Branch / City)
+      
         subject: c[3]?.v,
         customer: c[5]?.v,
         machineNumber: c[7]?.v,
         machineModel: c[8]?.v,
         hmr: c[9]?.v,
         serviceEngg: c[15]?.v,
+      
         engineNo: c[17]?.v,
         failedPartName: c[18]?.v,
         failedPartNo: c[19]?.v,
         actionRequired: c[20]?.v,
-        techwebNo
+      
+        techwebNo: clean(c[21]?.v)
       };
+
 
       processedMap[rowData.callId] = rowData;
       completedRows.push(rowData);
