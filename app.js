@@ -22,6 +22,7 @@ let processedMap = {};
 let activeRow = null;
 let completedRows = [];
 let currentView = "pending"; // or "completed"
+let activeCompletedRow = null;
 
 /***************************************************
  * HELPERS
@@ -124,6 +125,7 @@ fetch(PROCESSED_URL)
         failedPartName: c[18]?.v,
         failedPartNo: c[19]?.v,
         actionRequired: c[20]?.v
+        techwebNo // 👈 NEW
       };
 
       processedMap[callId] = rowData;
@@ -363,7 +365,11 @@ function renderCompletedTable() {
   tbody.innerHTML = "";
 
   completedRows.forEach(r => {
+    const isTWDone = !!r.techwebNo;
+
     const tr = document.createElement("tr");
+    if (isTWDone) tr.classList.add("tw-done-row");
+
     tr.innerHTML = `
       <td>${r.callId}</td>
       <td>${r.createDate || ""}</td>
@@ -375,9 +381,14 @@ function renderCompletedTable() {
       <td>${r.serviceEngg || ""}</td>
       <td class="status-done">Completed</td>
       <td>
-        <button onclick="openCompletedOnly('${r.callId}')">Copy</button>
+        ${
+          isTWDone
+            ? `<button disabled>TW DONE ✔</button>`
+            : `<button onclick="openTWModal('${r.callId}')">TW DONE</button>`
+        }
       </td>
     `;
+
     tbody.appendChild(tr);
   });
 
@@ -421,6 +432,53 @@ Action Required : ${d.actionRequired}
 `.trim();
 }
 
+function openTWModal(callId) {
+  activeCompletedRow = completedRows.find(r => r.callId === callId);
+  if (!activeCompletedRow) return;
+
+  document.getElementById("techwebInput").value = "";
+  document.getElementById("twModal").hidden = false;
+}
+
+function closeTWModal() {
+  document.getElementById("twModal").hidden = true;
+  activeCompletedRow = null;
+}
+
+
+function saveTWDone() {
+  const input = document.getElementById("techwebInput");
+  const techwebNo = input.value.trim();
+
+  if (!techwebNo) {
+    alert("Please enter Techweb Number");
+    return;
+  }
+
+  const payload = {
+    callId: activeCompletedRow.callId,
+    techwebNo
+  };
+
+  fetch(SAVE_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      type: "TW_DONE",
+      ...payload
+    })
+  })
+    .then(r => r.text())
+    .then(() => {
+      // update local state
+      activeCompletedRow.techwebNo = techwebNo;
+
+      closeTWModal();
+      renderCompletedTable();
+
+      alert("Marked as TW DONE ✔️");
+    })
+    .catch(() => alert("Failed to save Techweb number"));
+}
 
 
 document.addEventListener("DOMContentLoaded", () => {
