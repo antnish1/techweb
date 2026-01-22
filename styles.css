@@ -335,3 +335,14 @@ tbody tr:hover {
     transform: rotate(360deg);
   }
 }
+
+
+
+.tw-done-row {
+  background: #d1e7dd !important; /* light green */
+}
+
+.tw-done-row td {
+  color: #0f5132;
+  font-weight: 500;
+}
