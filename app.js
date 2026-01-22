@@ -193,25 +193,53 @@ function copyToClipboard() {
 }
 
 function saveCompleted() {
+  if (!activeRow) {
+    alert("No record selected");
+    return;
+  }
+
   const callId = clean(activeRow[0]?.v);
+
+  if (!callId) {
+    alert("Invalid Call ID");
+    return;
+  }
 
   const payload = {
     callId,
-    engineNo: engineInput.value,
-    failedPartName: failedPartNameInput.value,
-    failedPartNo: failedPartNoInput.value,
-    actionRequired: actionRequiredInput.value
+    engineNo: engineInput.value.trim(),
+    failedPartName: failedPartNameInput.value.trim(),
+    failedPartNo: failedPartNoInput.value.trim(),
+    actionRequired: actionRequiredInput.value.trim()
   };
+
+  // Basic validation
+  if (!payload.engineNo || !payload.failedPartName) {
+    alert("Please fill at least Engine No and Failed Part Name");
+    return;
+  }
 
   fetch(SAVE_URL, {
     method: "POST",
     body: JSON.stringify(payload)
-  }).then(() => {
-    processedMap[callId] = payload;
-    closeModal();
-    alert("Saved ✔️");
-  });
+  })
+    .then(res => res.text())
+    .then(() => {
+      // Update local state
+      processedMap[callId] = payload;
+
+      // Refresh table UI
+      document.getElementById("viewBtn").click();
+
+      closeModal();
+      alert("Saved to OCR_PROCESSED ✔️");
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Failed to save data ❌");
+    });
 }
+
 
 function closeModal() {
   document.getElementById("copyModal").hidden = true;
