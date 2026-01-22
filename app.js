@@ -434,9 +434,14 @@ Action Required : ${d.actionRequired}
 `.trim();
 }
 
+let activeCompletedRow = null;
+
 function openTWModal(callId) {
   activeCompletedRow = completedRows.find(r => r.callId === callId);
-  if (!activeCompletedRow) return;
+  if (!activeCompletedRow) {
+    alert("Completed record not found");
+    return;
+  }
 
   document.getElementById("techwebInput").value = "";
   document.getElementById("twModal").hidden = false;
@@ -448,39 +453,37 @@ function closeTWModal() {
 }
 
 
-function saveTWDone() {
-  const input = document.getElementById("techwebInput");
-  const techwebNo = input.value.trim();
 
+function saveTWDone() {
+  if (!activeCompletedRow) {
+    alert("No completed row selected");
+    return;
+  }
+
+  const techwebNo = document.getElementById("techwebInput").value.trim();
   if (!techwebNo) {
     alert("Please enter Techweb Number");
     return;
   }
 
-  const payload = {
-    callId: activeCompletedRow.callId,
-    techwebNo
-  };
-
   fetch(SAVE_URL, {
     method: "POST",
     body: JSON.stringify({
       type: "TW_DONE",
-      ...payload
+      callId: activeCompletedRow.callId,
+      techwebNo
     })
   })
     .then(r => r.text())
     .then(() => {
-      // update local state
       activeCompletedRow.techwebNo = techwebNo;
-
       closeTWModal();
       renderCompletedTable();
-
       alert("Marked as TW DONE ✔️");
     })
-    .catch(() => alert("Failed to save Techweb number"));
+    .catch(() => alert("Failed to save Techweb Number"));
 }
+
 
 
 document.addEventListener("DOMContentLoaded", () => {
