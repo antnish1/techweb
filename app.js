@@ -154,16 +154,16 @@ document.getElementById("viewBtn").onclick = () => {
  ***************************************************/
 function openModal(callId) {
   activeRow = filteredRows.find(r => clean(r[0]?.v) === callId);
-  const done = processedMap[callId] || {};
 
-  engineInput.value = done.engineNo || "";
-  failedPartNameInput.value = done.failedPartName || "";
-  failedPartNoInput.value = done.failedPartNo || "";
-  actionRequiredInput.value = done.actionRequired || "";
+  // 🔄 ALWAYS RESET INPUTS FOR NEW POPUP
+  resetModalInputs();
 
-  refreshCopyText(); // ✅ IMPORTANT
+  // 🔁 Refresh copy text with empty placeholders
+  refreshCopyText();
+
   document.getElementById("copyModal").hidden = false;
 }
+
 
 function generateCopyText(doneData = {}) {
   const c = activeRow;
@@ -312,6 +312,12 @@ function saveCompleted() {
     });
 }
 
+function resetModalInputs() {
+  engineInput.value = "";
+  failedPartNameInput.value = "";
+  failedPartNoInput.value = "";
+  actionRequiredInput.value = "";
+}
 
 
 function closeModal() {
