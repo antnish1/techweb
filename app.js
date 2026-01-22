@@ -400,20 +400,20 @@ function renderCompletedTable() {
 
 
 function openCompletedOnly(callId) {
+  closeAllModals(); // 🔥 THIS IS THE KEY FIX
+
   const saved = processedMap[callId];
   if (!saved) return;
 
-  activeRow = null; // no OCR row here
+  engineInput.value = saved.engineNo || "";
+  failedPartNameInput.value = saved.failedPartName || "";
+  failedPartNoInput.value = saved.failedPartNo || "";
+  actionRequiredInput.value = saved.actionRequired || "";
 
-  engineInput.value = saved.engineNo;
-  failedPartNameInput.value = saved.failedPartName;
-  failedPartNoInput.value = saved.failedPartNo;
-  actionRequiredInput.value = saved.actionRequired;
-
-  refreshCopyTextCompleted(saved);
-
+  refreshCopyText();
   document.getElementById("copyModal").hidden = false;
 }
+
 
 
 function refreshCopyTextCompleted(d) {
@@ -438,8 +438,7 @@ Action Required : ${d.actionRequired}
 let activeCompletedRow = null;
 
 function openTWModal(callId) {
-  // 🔴 CLOSE COPY MODAL FIRST
-  document.getElementById("copyModal").hidden = true;
+  closeAllModals(); // 🔥 THIS IS THE KEY FIX
 
   activeCompletedRow = completedRows.find(r => r.callId === callId);
   if (!activeCompletedRow) {
@@ -450,6 +449,7 @@ function openTWModal(callId) {
   document.getElementById("techwebInput").value = "";
   document.getElementById("twModal").hidden = false;
 }
+
 
 function closeTWModal() {
   document.getElementById("twModal").hidden = true;
@@ -505,6 +505,13 @@ function formatGvizDate(value) {
 
   return value;
 }
+
+
+function closeAllModals() {
+  document.getElementById("copyModal").hidden = true;
+  document.getElementById("twModal").hidden = true;
+}
+
 
 
 document.addEventListener("DOMContentLoaded", () => {
