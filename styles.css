@@ -336,6 +336,9 @@ tbody tr:hover {
   }
 }
 
+.modal[hidden] {
+  display: none !important;
+}
 
 
 .tw-done-row {
