@@ -452,6 +452,8 @@ Action Required : ${d.actionRequired}
 let activeCompletedRow = null;
 
 function openTWModal(callId) {
+  console.log("TW DONE clicked for", callId);
+
   closeAllModals(); // 🔥 THIS IS THE KEY FIX
 
   activeCompletedRow = completedRows.find(r => r.callId === callId);
