@@ -8,17 +8,21 @@
 <body>
 
 <header class="topbar">
-  <h1>Techweb Warranty Failure Dashboard</h1>
-  <p>Live Warranty Failure Tracking System</p>
+  <div class="topbar-left">
+    <h1>Techweb Warranty Failure Dashboard</h1>
+    <p>Live Warranty Failure Tracking System</p>
+  </div>
+
+  <div class="topbar-right">
+    <div class="top-stat">
+      <span>Total Matching Calls</span>
+      <strong id="count">Loading…</strong>
+      <button id="viewBtn" disabled>View Records</button>
+    </div>
+  </div>
 </header>
 
-<section class="stats">
-  <div class="stat-card">
-    <span>Total Matching Calls</span>
-    <strong id="count">Loading…</strong>
-    <button id="viewBtn" disabled>View Records</button>
-  </div>
-</section>
+
 
 <section class="table-section">
   <table id="dataTable" hidden>
