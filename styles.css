@@ -264,3 +264,24 @@ tbody tr:hover {
   display: none !important;
 }
 
+
+@media (max-width: 768px) {
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .topbar-right {
+    width: 100%;
+  }
+
+  .top-stat {
+    width: 100%;
+  }
+
+  .table-section {
+    height: calc(100vh - 140px);
+  }
+}
+
