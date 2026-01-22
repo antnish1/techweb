@@ -102,7 +102,7 @@ fetch(PROCESSED_URL)
       if (!c || !c[0]?.v) return;
 
       const callId = clean(c[0].v);
-
+      const techwebNo = clean(c[21]?.v); // Column V
       const rowData = {
         callId,
         createDate: c[1]?.v,
