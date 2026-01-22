@@ -161,7 +161,7 @@ function openModal(callId) {
   failedPartNoInput.value = done.failedPartNo || "";
   actionRequiredInput.value = done.actionRequired || "";
 
-  generateCopyText(done);
+  refreshCopyText(); // ✅ IMPORTANT
   document.getElementById("copyModal").hidden = false;
 }
 
@@ -189,6 +189,43 @@ Failed Part No. : ${doneData.failedPartNo || "__________"}
 Action Required : ${doneData.actionRequired || "__________"}
 `.trim();
 }
+
+
+
+function refreshCopyText() {
+  if (!activeRow) return;
+
+  const c = activeRow;
+
+  const data = {
+    engineNo: engineInput.value.trim(),
+    failedPartName: failedPartNameInput.value.trim(),
+    failedPartNo: failedPartNoInput.value.trim(),
+    actionRequired: actionRequiredInput.value.trim()
+  };
+
+  document.getElementById("copyText").value = `
+Is M/C Covered Under JCB Care / Engine Care / Warranty : U/W
+Call ID : ${clean(c[0]?.v)}
+Customer Name : ${clean(c[6]?.v)}
+Machine SL No. : ${clean(c[9]?.v)}
+Engine No : ${data.engineNo || "__________"}
+M/C Model : ${clean(c[10]?.v)}
+HMR : ${clean(c[11]?.v)}
+Date of Installation : ${formatDate(parseDate(c[12]))}
+Date of Failure : ${formatDate(parseDate(c[1]))}
+M/C Location : ${clean(c[21]?.v)}
+M/C Application : Material Handling
+Dealership & Branch Name : FCV
+Engineer Name : ${clean(c[24]?.v)}
+M/C Condition : Running with problem
+Nature of Complaint : ${clean(c[4]?.v)}
+Failed Part Name : ${data.failedPartName || "__________"}
+Failed Part No. : ${data.failedPartNo || "__________"}
+Action Required : ${data.actionRequired || "__________"}
+`.trim();
+}
+
 
 /***************************************************
  * SAVE + COPY
