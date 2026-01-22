@@ -349,3 +349,19 @@ tbody tr:hover {
   color: #0f5132;
   font-weight: 500;
 }
+
+
+.modal {
+  pointer-events: auto;
+}
+
+.modal[hidden] {
+  pointer-events: none;
+}
+
+
+.table-section {
+  position: relative;
+  z-index: 1;
+}
+
