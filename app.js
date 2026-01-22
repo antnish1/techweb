@@ -160,7 +160,7 @@ Is M/C Covered Under JCB Care / Engine Care / Warranty : U/W
 Call ID : ${clean(c[0]?.v)}
 Customer Name : ${clean(c[6]?.v)}
 Machine SL No. : ${clean(c[9]?.v)}
-Engine No : __________
+Engine No : 
 M/C Model : ${clean(c[10]?.v)}
 HMR : ${clean(c[11]?.v)}
 Date of Installation : ${parseDate(c[12])}
@@ -171,9 +171,9 @@ Dealership & Branch Name : FCV
 Engineer Name : ${clean(c[24]?.v)}
 M/C Condition : Running with problem
 Nature of Complaint : ${clean(c[4]?.v)}
-Failed Part Name : __________
-Failed Part No. : __________
-Action Required : __________
+Failed Part Name : 
+Failed Part No. : 
+Action Required : 
 `.trim();
 
   document.getElementById("copyBox").hidden = false;
