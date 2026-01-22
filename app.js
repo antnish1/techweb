@@ -22,7 +22,7 @@ let processedMap = {};
 let activeRow = null;
 let completedRows = [];
 let currentView = "pending"; // or "completed"
-let activeCompletedRow = null;
+
 
 /***************************************************
  * HELPERS
