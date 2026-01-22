@@ -146,29 +146,39 @@ document.getElementById("viewBtn").onclick = () => {
  ***************************************************/
 function openModal(callId) {
   activeRow = filteredRows.find(r => clean(r[0]?.v) === callId);
-  const done = processedMap[callId];
+  const done = processedMap[callId] || {};
 
-  document.getElementById("engineInput").value = done?.engineNo || "";
-  document.getElementById("failedPartNameInput").value = done?.failedPartName || "";
-  document.getElementById("failedPartNoInput").value = done?.failedPartNo || "";
-  document.getElementById("actionRequiredInput").value = done?.actionRequired || "";
+  engineInput.value = done.engineNo || "";
+  failedPartNameInput.value = done.failedPartName || "";
+  failedPartNoInput.value = done.failedPartNo || "";
+  actionRequiredInput.value = done.actionRequired || "";
 
   generateCopyText(done);
   document.getElementById("copyModal").hidden = false;
 }
 
-function generateCopyText(done) {
+function generateCopyText(doneData = {}) {
   const c = activeRow;
+
   document.getElementById("copyText").value = `
+Is M/C Covered Under JCB Care / Engine Care / Warranty : U/W
 Call ID : ${clean(c[0]?.v)}
-Customer : ${clean(c[6]?.v)}
-Machine No : ${clean(c[9]?.v)}
-Engine No : ${done?.engineNo || "__________"}
-Model : ${clean(c[10]?.v)}
+Customer Name : ${clean(c[6]?.v)}
+Machine SL No. : ${clean(c[9]?.v)}
+Engine No : ${doneData.engineNo || "__________"}
+M/C Model : ${clean(c[10]?.v)}
 HMR : ${clean(c[11]?.v)}
-Failure Date : ${formatDate(parseDate(c[1]))}
-Failed Part : ${done?.failedPartName || "__________"}
-Action : ${done?.actionRequired || "__________"}
+Date of Installation : ${formatDate(parseDate(c[12]))}
+Date of Failure : ${formatDate(parseDate(c[1]))}
+M/C Location : ${clean(c[21]?.v)}
+M/C Application : Material Handling
+Dealership & Branch Name : FCV
+Engineer Name : ${clean(c[24]?.v)}
+M/C Condition : Running with problem
+Nature of Complaint : ${clean(c[4]?.v)}
+Failed Part Name : ${doneData.failedPartName || "__________"}
+Failed Part No. : ${doneData.failedPartNo || "__________"}
+Action Required : ${doneData.actionRequired || "__________"}
 `.trim();
 }
 
