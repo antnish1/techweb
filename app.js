@@ -20,6 +20,8 @@ const SAVE_URL =
 let filteredRows = [];
 let processedMap = {};
 let activeRow = null;
+let completedRows = [];
+let currentView = "pending"; // or "completed"
 
 /***************************************************
  * HELPERS
