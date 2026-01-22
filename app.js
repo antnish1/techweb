@@ -101,32 +101,50 @@ fetch(PROCESSED_URL)
       if (!c || !c[0]?.v) return;
 
       const callId = clean(c[0].v);
-      processedMap[callId] = {
-        engineNo: clean(c[17]?.v),
-        failedPartName: clean(c[18]?.v),
-        failedPartNo: clean(c[19]?.v),
-        actionRequired: clean(c[20]?.v)
+
+      const rowData = {
+        callId,
+        createDate: c[1]?.v,
+        crmCallNo: c[2]?.v,
+        subject: c[3]?.v,
+        status: c[4]?.v,
+        customer: c[5]?.v,
+        mobile: c[6]?.v,
+        machineNumber: c[7]?.v,
+        machineModel: c[8]?.v,
+        hmr: c[9]?.v,
+        installDate: c[10]?.v,
+        callType: c[11]?.v,
+        callSubType: c[12]?.v,
+        branch: c[13]?.v,
+        city: c[14]?.v,
+        serviceEngg: c[15]?.v,
+        machineStatus: c[16]?.v,
+        engineNo: c[17]?.v,
+        failedPartName: c[18]?.v,
+        failedPartNo: c[19]?.v,
+        actionRequired: c[20]?.v
       };
+
+      processedMap[callId] = rowData;
+      completedRows.push(rowData);
     });
 
-    // ✅ UPDATE COMPLETED KPI
-    document.getElementById("completedCount").innerText =
-      Object.keys(processedMap).length;
+    document.getElementById("completedCount").innerText = completedRows.length;
   });
+
 ;
 
-/***************************************************
- * RENDER TABLE
- ***************************************************/
-document.getElementById("viewBtn").onclick = () => {
+function renderPendingTable() {
   const tbody = document.querySelector("#dataTable tbody");
   tbody.innerHTML = "";
 
   filteredRows.forEach(c => {
     const callId = clean(c[0]?.v);
-    const done = processedMap[callId];
+    const isCompleted = !!processedMap[callId];
 
     const tr = document.createElement("tr");
+
     tr.innerHTML = `
       <td>${callId}</td>
       <td>${formatDate(parseDate(c[1]))}</td>
@@ -136,20 +154,22 @@ document.getElementById("viewBtn").onclick = () => {
       <td>${clean(c[10]?.v)}</td>
       <td>${clean(c[11]?.v)}</td>
       <td>${clean(c[24]?.v)}</td>
-      <td class="${done ? "status-done" : "status-pending"}">
-        ${done ? "Completed" : "Pending"}
+      <td class="${isCompleted ? "status-done" : "status-pending"}">
+        ${isCompleted ? "Completed" : "Pending"}
       </td>
       <td>
         <button onclick="openModal('${callId}')">
-          ${done ? "Copy" : "Process"}
+          ${isCompleted ? "Copy" : "Process"}
         </button>
       </td>
     `;
+
     tbody.appendChild(tr);
   });
 
   document.getElementById("dataTable").hidden = false;
-};
+}
+
 
 /***************************************************
  * MODAL LOGIC
@@ -336,3 +356,98 @@ function closeModal() {
   document.getElementById("copyModal").hidden = true;
 }
 
+function renderPendingTable() {
+  const tbody = document.querySelector("#dataTable tbody");
+  tbody.innerHTML = "";
+
+  filteredRows.forEach(c => {
+    const callId = clean(c[0]?.v);
+    const done = processedMap[callId];
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${callId}</td>
+      <td>${formatDate(parseDate(c[1]))}</td>
+      <td>${clean(c[4]?.v)}</td>
+      <td>${clean(c[6]?.v)}</td>
+      <td>${clean(c[9]?.v)}</td>
+      <td>${clean(c[10]?.v)}</td>
+      <td>${clean(c[11]?.v)}</td>
+      <td>${clean(c[24]?.v)}</td>
+      <td class="${done ? "status-done" : "status-pending"}">
+        ${done ? "Completed" : "Pending"}
+      </td>
+      <td>
+        <button onclick="openModal('${callId}')">
+          ${done ? "Copy" : "Process"}
+        </button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById("dataTable").hidden = false;
+}
+
+function renderCompletedTable() {
+  const tbody = document.querySelector("#dataTable tbody");
+  tbody.innerHTML = "";
+
+  completedRows.forEach(r => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${r.callId}</td>
+      <td>${r.createDate || ""}</td>
+      <td>${r.subject || ""}</td>
+      <td>${r.customer || ""}</td>
+      <td>${r.machineNumber || ""}</td>
+      <td>${r.machineModel || ""}</td>
+      <td>${r.hmr || ""}</td>
+      <td>${r.serviceEngg || ""}</td>
+      <td class="status-done">Completed</td>
+      <td>
+        <button onclick="openCompletedOnly('${r.callId}')">Copy</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById("dataTable").hidden = false;
+}
+
+
+function openCompletedOnly(callId) {
+  const saved = processedMap[callId];
+  if (!saved) return;
+
+  activeRow = null; // no OCR row here
+
+  engineInput.value = saved.engineNo;
+  failedPartNameInput.value = saved.failedPartName;
+  failedPartNoInput.value = saved.failedPartNo;
+  actionRequiredInput.value = saved.actionRequired;
+
+  refreshCopyTextCompleted(saved);
+
+  document.getElementById("copyModal").hidden = false;
+}
+
+
+function refreshCopyTextCompleted(d) {
+  document.getElementById("copyText").value = `
+Is M/C Covered Under JCB Care / Engine Care / Warranty : U/W
+Call ID : ${d.callId}
+Customer Name : ${d.customer}
+Machine SL No. : ${d.machineNumber}
+Engine No : ${d.engineNo}
+M/C Model : ${d.machineModel}
+HMR : ${d.hmr}
+Date of Installation : ${d.installDate}
+Date of Failure : ${d.createDate}
+M/C Location : ${d.branch}
+Engineer Name : ${d.serviceEngg}
+Failed Part Name : ${d.failedPartName}
+Failed Part No. : ${d.failedPartNo}
+Action Required : ${d.actionRequired}
+`.trim();
+}
