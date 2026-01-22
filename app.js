@@ -379,7 +379,10 @@ function renderCompletedTable() {
       <td>${r.serviceEngg || ""}</td>
       <td class="status-done">Completed</td>
       <td>
+        <!-- ✅ COPY BUTTON -->
         <button onclick="openCompletedOnly('${r.callId}')">Copy</button>
+
+        <!-- ✅ TW DONE BUTTON -->
         ${
           isTWDone
             ? `<button disabled style="margin-left:6px;">TW DONE ✔</button>`
