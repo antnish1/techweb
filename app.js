@@ -446,9 +446,10 @@ Machine SL No. : ${d.machineNumber}
 Engine No : ${d.engineNo}
 M/C Model : ${d.machineModel}
 HMR : ${d.hmr}
-Date of Installation : ${d.installDate}
-Date of Failure : ${d.createDate}
-M/C Location : ${d.branch}
+Date of Installation : ${formatGvizDate(d.installDate)}
+Date of Failure : ${formatGvizDate(d.failureDate)}
+M/C Location : ${d.location || "-"}
+
 Engineer Name : ${d.serviceEngg}
 Failed Part Name : ${d.failedPartName}
 Failed Part No. : ${d.failedPartNo}
