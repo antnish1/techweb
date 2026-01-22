@@ -45,6 +45,7 @@ body {
 .topbar-right {
   display: flex;
   align-items: center;
+  gap: 12px;
 }
 
 .top-stat {
